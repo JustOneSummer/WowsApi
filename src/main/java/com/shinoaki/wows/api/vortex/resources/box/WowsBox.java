@@ -30,18 +30,22 @@ public class WowsBox {
     private WowsIcons icons;
 
     public static List<WowsBox> request(WowsServer server) throws IOException, InterruptedException, BasicException {
+        return request(server, "zh-sg");
+    }
+
+    public static List<WowsBox> request(WowsServer server, String languageCode) throws IOException, InterruptedException, BasicException {
         final String json = """
                 [
                 	{
                 		"query": "query Lootbox($id: String, $languageCode: String) {\\n  lootbox(lootboxId: $id, lang: $languageCode) {\\n    id\\n    title\\n    shortTitle\\n    isPremium\\n    icons {\\n      default\\n    }\\n  }\\n}",
                 		"variables": {
-                			"languageCode": "zh-sg"
+                			"languageCode": "{languageCode}"
                 		}
                 	}
                 ]
-                """;
+                """.replace("{languageCode}", languageCode);
         try (HttpClient client = HttpClient.newHttpClient()) {
-            var req = HttpRequest.newBuilder(URI.create(server.vortex()+"/api/graphql/glossary/"))
+            var req = HttpRequest.newBuilder(URI.create(server.vortex() + "/api/graphql/glossary/"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json)).build();
             var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
