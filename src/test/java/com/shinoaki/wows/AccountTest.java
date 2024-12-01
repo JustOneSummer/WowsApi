@@ -1,10 +1,14 @@
 package com.shinoaki.wows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.shinoaki.wows.api.codec.http.WowsHttpUserTools;
+import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
+import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -16,15 +20,16 @@ import java.util.concurrent.ExecutionException;
 public class AccountTest {
 
     @Test
-    public void searchUserAsia() throws InterruptedException, ExecutionException {
+    public void searchUserAsia() throws InterruptedException, ExecutionException, IOException, BasicException {
         String u1 = "JustOn";
         HttpClient client = HttpClient.newBuilder().build();
-        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
+        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.ASIA);
         System.out.println(asia.searchUserVortexAsync(u1).get().data());
         System.out.println("=================");
         System.out.println(asia.searchUserDevelopersAsync(DevelopersTest.token, u1));
-        System.out.println(asia.userInfoDevelopersAsync(DevelopersTest.token, 2022515210));
-        System.out.println(asia.userInfoDevelopersAsync(DevelopersTest.token, 2022515211));
+        System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515210));
+        System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515211));
+        System.out.println(new JsonUtils().toJson(asia.userInfoDevelopers(DevelopersTest.token, 2022515210,"e460fce93ab430baedf283e5f0a7d761c50b7a72")));
     }
 
     @Test

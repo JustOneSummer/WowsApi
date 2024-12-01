@@ -100,8 +100,12 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public CompletableFuture<CompletableInfo<DevelopersUserInfo>> userInfoDevelopersAsync(String token, long accountId) {
+        return userInfoDevelopersAsync(token, accountId, "");
+    }
+
+    public CompletableFuture<CompletableInfo<DevelopersUserInfo>> userInfoDevelopersAsync(String token, long accountId, String accessToken) {
         final WowsJsonUtils json = new WowsJsonUtils();
-        return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId))).thenApplyAsync(data -> {
+        return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId, accessToken))).thenApplyAsync(data -> {
             try {
                 return CompletableInfo.ok(DevelopersUserInfo.parse(json, accountId, HttpCodec.response(data)));
             } catch (BasicException e) {
@@ -111,9 +115,13 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public DevelopersUserInfo userInfoDevelopers(String token, long accountId) throws IOException, BasicException {
+        return userInfoDevelopers(token, accountId, "");
+    }
+
+    public DevelopersUserInfo userInfoDevelopers(String token, long accountId, String accessToken) throws IOException, BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return DevelopersUserInfo.parse(json, accountId, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token,
-                accountId)))));
+                accountId, accessToken)))));
     }
 
     private URI uriVortex(String userName) {
@@ -128,10 +136,13 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         return URI.create(server.api() + String.format("/wows/account/list/?application_id=%s&search=%s", token, HttpCodec.encodeURIComponent(userName)));
     }
 
-    private URI uriDeveloperUserInfo(String token, long accountId) {
+    private URI uriDeveloperUserInfo(String token, long accountId, String accessToken) {
         final String extra = "private.grouped_contacts,private.port,statistics.clan,statistics.club,statistics.oper_div,statistics.oper_div_hard,statistics" +
                              ".oper_solo,statistics.pve,statistics.pve_div2,statistics.pve_div3,statistics.pve_solo,statistics.pvp_div2,statistics.pvp_div3," +
                              "statistics.pvp_solo,statistics.rank_div2,statistics.rank_div3,statistics.rank_solo";
-        return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&account_id=%s&extra=%s", token, accountId, extra));
+        if (accessToken.isBlank()) {
+            return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&account_id=%s&extra=%s", token, accountId, extra));
+        }
+        return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&&access_token=%s&account_id=%s&extra=%s", token, accessToken, accountId, extra));
     }
 }
